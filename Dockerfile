@@ -35,6 +35,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
+# Crear directorios necesarios ANTES de usar data/
+RUN mkdir -p data models assets/logs
+
 # Copiar código fuente y scripts
 COPY src/ ./src/
 COPY data/download_data.py ./data/download_data.py
@@ -42,7 +45,6 @@ COPY scripts/ ./scripts/
 COPY config/ ./config/
 COPY assets/ ./assets/
 
-# Dar permisos de ejecución a scripts
 RUN chmod +x scripts/*.sh data/download_data.py
 
 # ============================================================================
@@ -81,8 +83,6 @@ RUN echo "========================================" && \
 #     echo "✅ Agente RL entrenado exitosamente" && \
 #     ls -lh models/
 
-# Crear directorios necesarios
-RUN mkdir -p models data assets/logs
 
 # Exponer puerto de Streamlit
 EXPOSE $PORT
