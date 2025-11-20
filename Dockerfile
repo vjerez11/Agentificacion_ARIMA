@@ -48,32 +48,15 @@ COPY assets/ ./assets/
 RUN chmod +x scripts/*.sh data/download_data.py
 
 # ============================================================================
-# GENERACIÓN AUTOMÁTICA DE DATOS
+# GENERACIÓN AUTOMÁTICA DE DATOS (DESHABILITADA EN BUILD)
+# Railway NO permite descargas externas durante docker build.
+# Ahora se ejecuta en runtime dentro del CMD final.
 # ============================================================================
-# Este paso descarga/genera los 60 meses de datos de consumo eléctrico alemán
-# y los divide automáticamente en conjuntos train/val/test
-
-RUN echo "========================================" && \
-    echo "📥 Generando datos automáticamente..." && \
-    echo "========================================" && \
-    python data/download_data.py && \
-    echo "" && \
-    echo "✅ Datos generados exitosamente" && \
-    echo "   - 60 meses de consumo eléctrico alemán" && \
-    echo "   - División: 48 train + 6 val + 6 test" && \
-    echo "" && \
-    ls -lh data/
 
 # ============================================================================
 # ENTRENAMIENTO DEL AGENTE RL (OPCIONAL - COMENTADO POR DEFECTO)
 # ============================================================================
-# El entrenamiento del agente RL tarda ~30-60 minutos y aumenta
-# significativamente el tiempo de build. Se recomienda entrenar
-# después de iniciar el contenedor usando:
-#   docker exec -it arima-rl-container python -m src.rl_agent --train --timesteps 50000
-#
-# Para habilitar el entrenamiento automático durante el build, descomente las siguientes líneas:
-#
+
 # RUN echo "========================================" && \
 #     echo "🎓 Entrenando agente RL..." && \
 #     echo "========================================" && \
@@ -83,7 +66,6 @@ RUN echo "========================================" && \
 #     echo "✅ Agente RL entrenado exitosamente" && \
 #     ls -lh models/
 
-
 # Exponer puerto de Streamlit
 EXPOSE $PORT
 
@@ -91,9 +73,16 @@ EXPOSE $PORT
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl --fail http://localhost:$PORT/_stcore/health || exit 1
 
-# Comando por defecto: ejecutar aplicación Streamlit
-CMD ["streamlit", "run", "src/app.py", \
-     "--server.port=8501", \
-     "--server.address=0.0.0.0", \
-     "--server.headless=true", \
-     "--browser.gatherUsageStats=false"]
+# ============================================================================
+# CMD FINAL: AHORA SÍ GENERA DATOS EN RUNTIME ANTES DE LANZAR STREAMLIT
+# ============================================================================
+CMD ["bash", "-c", "\
+    echo '📥 Ejecutando generación automática de datos en runtime...' && \
+    python data/download_data.py && \
+    echo '✅ Datos listos. Iniciando aplicación Streamlit...' && \
+    streamlit run src/app.py \
+        --server.port=8501 \
+        --server.address=0.0.0.0 \
+        --server.headless=true \
+        --browser.gatherUsageStats=false \
+"]
