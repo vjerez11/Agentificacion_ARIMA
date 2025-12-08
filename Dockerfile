@@ -32,8 +32,13 @@ WORKDIR $APP_HOME
 COPY requirements.txt .
 
 # Instalar dependencias de Python
+# Se instala torch por separado para usar la versión de CPU, mucho más ligera y rápida.
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+# Instalar el resto de las dependencias
+RUN pip install --no-cache-dir -r requirements.txt
+
 
 # Crear directorios necesarios ANTES de usar data/
 RUN mkdir -p data models assets/logs
