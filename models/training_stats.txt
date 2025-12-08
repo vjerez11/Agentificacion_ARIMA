@@ -1,0 +1,9 @@
+Estadísticas de Entrenamiento del Agente RL
+============================================================
+
+mean_reward: -9.698716074465006
+std_reward: 1.746765523889346e-06
+mean_aic: 544.2486742394411
+std_aic: 0.0
+best_aic: 544.2486742394411
+best_config: (0, 0, 0)

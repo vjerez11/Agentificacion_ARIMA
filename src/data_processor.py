@@ -49,7 +49,7 @@ class TimeSeriesProcessor:
         
         return self.df
     
-    def split_data(self, train_size=48, val_size=6):
+    def split_data(self, train_size=30, val_size=3):
         """
         Divide datos en train/validation/test.
         

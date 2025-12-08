@@ -96,11 +96,12 @@ class ARIMAModel:
         
         if return_conf_int:
             conf_int = forecast_result.conf_int(alpha=alpha)
-            lower = conf_int.iloc[:, 0].values
-            upper = conf_int.iloc[:, 1].values
-            return forecast.values, lower, upper
+            # Usar indexación de numpy en lugar de .iloc de pandas
+            lower = conf_int[:, 0]
+            upper = conf_int[:, 1]
+            return forecast, lower, upper
         else:
-            return forecast.values
+            return forecast
     
     def evaluate(self, val_data):
         """
@@ -328,6 +329,9 @@ def create_comparison_table(results):
             }
             
             rows.append(row)
+    
+    if not rows:
+        return pd.DataFrame()
     
     df = pd.DataFrame(rows)
     df = df.sort_values('AIC').reset_index(drop=True)

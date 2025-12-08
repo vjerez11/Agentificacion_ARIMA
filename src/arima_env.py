@@ -117,13 +117,23 @@ class ARIMAHyperparamEnv(gym.Env):
         info = {}
         
         return observation, info
-    
+
+    def _discrete_to_p_d_q(self, action):
+        """
+        Convierte un índice de acción discreto a un triplete (p, d, q).
+        """
+        action = int(action)
+        p = action // ((self.d_max + 1) * (self.q_max + 1))
+        d = (action % ((self.d_max + 1) * (self.q_max + 1))) // (self.q_max + 1)
+        q = action % (self.q_max + 1)
+        return p, d, q
+
     def step(self, action):
         """
         Ejecuta una acción (entrenar ARIMA con configuración específica).
         
         Args:
-            action: Array [p, d, q]
+            action: Array [p, d, q] o entero discreto
             
         Returns:
             observation: Nuevo estado
@@ -135,7 +145,13 @@ class ARIMAHyperparamEnv(gym.Env):
         self.current_step += 1
         
         # Extraer configuración de la acción
-        p, d, q = int(action[0]), int(action[1]), int(action[2])
+        if np.isscalar(action) or (isinstance(action, np.ndarray) and action.ndim == 0):
+            # Acción es discreta (escalar o array 0-dim), convertir a (p, d, q)
+            p, d, q = self._discrete_to_p_d_q(action)
+        else:
+            # Acción ya es (p, d, q)
+            p, d, q = int(action[0]), int(action[1]), int(action[2])
+
         self.current_config = [p, d, q]
         
         # Entrenar modelo ARIMA y obtener métricas

@@ -550,58 +550,61 @@ def main():
                 # Tabla comparativa
                 comparison_df = create_comparison_table(results)
                 
-                st.markdown("### 📊 Tabla Comparativa")
-                
-                # Destacar mejor modelo
-                def highlight_best(row):
-                    if row.name == 0:  # Primera fila (mejor AIC)
-                        return ['background-color: #d4edda'] * len(row)
-                    return [''] * len(row)
-                
-                st.dataframe(
-                    comparison_df.style.apply(highlight_best, axis=1).format({
-                        'AIC': '{:.2f}',
-                        'BIC': '{:.2f}',
-                        'RMSE': '{:.2f}',
-                        'MAE': '{:.2f}',
-                        'MAPE': '{:.2f}%',
-                        'R²': '{:.4f}'
-                    }),
-                    use_container_width=True
-                )
-                
-                st.success(f"🏆 Mejor modelo: ARIMA({comparison_df.iloc[0]['p']}, {comparison_df.iloc[0]['d']}, {comparison_df.iloc[0]['q']}) con AIC = {comparison_df.iloc[0]['AIC']:.2f}")
-                
-                # Gráfica comparativa
-                fig_comparison = go.Figure()
-                
-                metrics = ['AIC', 'BIC', 'RMSE', 'MAE']
-                for i, row in comparison_df.iterrows():
-                    config_name = f"ARIMA({int(row['p'])},{int(row['d'])},{int(row['q'])})"
-                    fig_comparison.add_trace(go.Bar(
-                        name=config_name,
-                        x=metrics,
-                        y=[row['AIC'], row['BIC'], row['RMSE'], row['MAE']]
-                    ))
-                
-                fig_comparison.update_layout(
-                    title='Comparación de Métricas por Modelo',
-                    xaxis_title='Métrica',
-                    yaxis_title='Valor',
-                    barmode='group',
-                    height=500
-                )
-                
-                st.plotly_chart(fig_comparison, use_container_width=True)
-                
-                # Opción de exportar
-                csv = comparison_df.to_csv(index=False)
-                st.download_button(
-                    label="📥 Descargar Tabla como CSV",
-                    data=csv,
-                    file_name="comparacion_modelos_arima.csv",
-                    mime="text/csv"
-                )
+                if comparison_df.empty:
+                    st.error("❌ No se pudo entrenar exitosamente ninguno de los modelos con las configuraciones proporcionadas. Pruebe con otros parámetros.")
+                else:
+                    st.markdown("### 📊 Tabla Comparativa")
+                    
+                    # Destacar mejor modelo
+                    def highlight_best(row):
+                        if row.name == 0:  # Primera fila (mejor AIC)
+                            return ['background-color: #d4edda'] * len(row)
+                        return [''] * len(row)
+                    
+                    st.dataframe(
+                        comparison_df.style.apply(highlight_best, axis=1).format({
+                            'AIC': '{:.2f}',
+                            'BIC': '{:.2f}',
+                            'RMSE': '{:.2f}',
+                            'MAE': '{:.2f}',
+                            'MAPE': '{:.2f}%',
+                            'R²': '{:.4f}'
+                        }),
+                        use_container_width=True
+                    )
+                    
+                    st.success(f"🏆 Mejor modelo: ARIMA({comparison_df.iloc[0]['p']}, {comparison_df.iloc[0]['d']}, {comparison_df.iloc[0]['q']}) con AIC = {comparison_df.iloc[0]['AIC']:.2f}")
+                    
+                    # Gráfica comparativa
+                    fig_comparison = go.Figure()
+                    
+                    metrics = ['AIC', 'BIC', 'RMSE', 'MAE']
+                    for i, row in comparison_df.iterrows():
+                        config_name = f"ARIMA({int(row['p'])},{int(row['d'])},{int(row['q'])})"
+                        fig_comparison.add_trace(go.Bar(
+                            name=config_name,
+                            x=metrics,
+                            y=[row['AIC'], row['BIC'], row['RMSE'], row['MAE']]
+                        ))
+                    
+                    fig_comparison.update_layout(
+                        title='Comparación de Métricas por Modelo',
+                        xaxis_title='Métrica',
+                        yaxis_title='Valor',
+                        barmode='group',
+                        height=500
+                    )
+                    
+                    st.plotly_chart(fig_comparison, use_container_width=True)
+                    
+                    # Opción de exportar
+                    csv = comparison_df.to_csv(index=False)
+                    st.download_button(
+                        label="📥 Descargar Tabla como CSV",
+                        data=csv,
+                        file_name="comparacion_modelos_arima.csv",
+                        mime="text/csv"
+                    )
     
     # ========================================================================
     # TAB 4: DIAGNÓSTICOS
